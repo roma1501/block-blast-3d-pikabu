@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://games.pikabu.ru/sdk/sdk.js"></script>
+    <script src="./pikabu-bridge.js"></script>
+  <script src="./playgama-yandex-shim.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#03060d" />
+  <title>Взрыв блоков 3D</title>
+<script type="module" crossorigin src="./assets/index-DxEgx7f8.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CTrrP4z5.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas"></canvas>
+    <div id="fx-layer" aria-hidden="true"></div>
+
+    <!-- ================= in-game HUD ================= -->
+    <header id="hud" hidden>
+      <button id="pause-btn" class="glass-btn" type="button" data-icon="pause" aria-label="Pause"></button>
+      <div id="score-block">
+        <span id="score-caption"></span>
+        <strong id="score-value">0</strong>
+      </div>
+      <div id="hud-right">
+        <div id="objectives"></div>
+        <div id="coins-chip" class="chip"><span class="chip-icon" data-icon="coin"></span><span id="coins-value">0</span></div>
+      </div>
+      <div id="combo-pill" hidden></div>
+    </header>
+
+    <div id="booster-dock" hidden></div>
+    <div id="booster-hint" hidden><span id="booster-hint-text"></span><button id="booster-cancel" class="text-btn" type="button"></button></div>
+    <div id="banner" hidden></div>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- ================= main menu ================= -->
+    <section id="menu-screen" class="screen" hidden>
+      <div id="menu-space-art" aria-hidden="true">
+        <i class="flying-cubes cubes-a"></i>
+        <i class="flying-cubes cubes-b"></i>
+        <i class="flying-cubes cubes-c"></i>
+      </div>
+      <div class="menu-top">
+        <div id="brand">
+          <span id="brand-main"></span><span id="brand-sub"></span>
+        </div>
+        <p id="tagline"></p>
+      </div>
+
+      <div class="menu-wallet">
+        <div class="chip big"><span class="chip-icon" data-icon="coin"></span><span id="menu-coins">0</span></div>
+        <button id="menu-sound" class="glass-btn small" type="button" data-icon="sound" aria-label="Sound"></button>
+        <button id="menu-music" class="glass-btn small" type="button" data-icon="music" aria-label="Music"></button>
+      </div>
+
+      <div id="mode-list" class="mode-list"></div>
+
+      <nav id="menu-nav">
+        <button class="nav-btn accent" data-nav="wheel" type="button"><span data-icon="gift"></span><b id="nav-wheel"></b></button>
+        <button class="nav-btn" data-nav="shop" type="button"><span data-icon="shop"></span><b id="nav-shop"></b></button>
+        <button class="nav-btn" data-nav="skins" type="button"><span data-icon="skins"></span><b id="nav-skins"></b></button>
+        <button class="nav-btn" data-nav="leaders" type="button"><span data-icon="trophy"></span><b id="nav-leaders"></b></button>
+      </nav>
+    </section>
+
+    <!-- ================= overlays ================= -->
+    <div id="pause-overlay" class="overlay" hidden>
+      <div class="card small">
+        <h2 id="pause-title"></h2>
+        <p id="pause-sub"></p>
+      </div>
+    </div>
+
+    <div id="ingame-overlay" class="overlay" hidden>
+      <div class="card small">
+        <h2 id="ingame-title"></h2>
+        <div class="toggle-row">
+          <button id="ingame-sound" class="toggle-btn" type="button"><span data-icon="sound"></span><span></span></button>
+          <button id="ingame-music" class="toggle-btn" type="button"><span data-icon="music"></span><span></span></button>
+        </div>
+        <button id="ingame-resume" class="btn primary" type="button"></button>
+        <button id="ingame-restart" class="btn ghost" type="button"></button>
+        <button id="ingame-menu" class="btn ghost" type="button"></button>
+      </div>
+    </div>
+
+    <div id="gameover-overlay" class="overlay" hidden>
+      <div class="card">
+        <h2 id="go-title"></h2>
+        <div id="go-badge" hidden></div>
+        <p id="go-score-caption"></p>
+        <div id="go-score">0</div>
+        <div id="go-stats" class="stat-row"></div>
+        <button id="go-revive" class="btn revive" type="button" hidden>
+          <span data-icon="play"></span>
+          <span class="revive-copy"><b id="go-revive-title"></b><small id="go-revive-desc"></small></span>
+          <span class="ad-tag">AD</span>
+        </button>
+        <div class="btn-row">
+          <button id="go-again" class="btn primary" type="button"></button>
+          <button id="go-menu" class="btn ghost" type="button"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="wheel-overlay" class="overlay sheet" hidden>
+      <div class="card wide">
+        <div class="card-head">
+          <h2 id="wheel-title"></h2>
+          <button class="icon-close" data-close="wheel" type="button" data-icon="close" aria-label="Close"></button>
+        </div>
+        <p id="wheel-sub" class="muted"></p>
+        <div id="wheel-mount"></div>
+        <div id="wheel-actions">
+          <button id="wheel-free" class="btn primary" type="button"></button>
+          <button id="wheel-ad" class="btn ad" type="button"><span></span><span class="ad-tag">AD</span></button>
+          <button id="wheel-coins" class="btn ghost" type="button"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="shop-overlay" class="overlay sheet" hidden>
+      <div class="card wide">
+        <div class="card-head">
+          <h2 id="shop-title"></h2>
+          <div class="chip"><span class="chip-icon" data-icon="coin"></span><span id="shop-coins">0</span></div>
+          <button class="icon-close" data-close="shop" type="button" data-icon="close" aria-label="Close"></button>
+        </div>
+        <p id="shop-sub" class="muted"></p>
+        <div id="shop-list" class="shop-list"></div>
+        <button id="shop-ad" class="btn ad wide-btn" type="button"><span></span><span class="ad-tag">AD</span></button>
+      </div>
+    </div>
+
+    <div id="skins-overlay" class="overlay sheet" hidden>
+      <div class="card wide">
+        <div class="card-head">
+          <h2 id="skins-title"></h2>
+          <div class="chip"><span class="chip-icon" data-icon="coin"></span><span id="skins-coins">0</span></div>
+          <button class="icon-close" data-close="skins" type="button" data-icon="close" aria-label="Close"></button>
+        </div>
+        <p id="skins-sub" class="muted"></p>
+        <div id="skins-grid" class="skins-grid"></div>
+      </div>
+    </div>
+
+    <div id="leaders-overlay" class="overlay sheet" hidden>
+      <div class="card wide">
+        <div class="card-head">
+          <h2 id="leaders-title"></h2>
+          <button class="icon-close" data-close="leaders" type="button" data-icon="close" aria-label="Close"></button>
+        </div>
+        <div id="leaders-tabs" class="tabs"></div>
+        <div id="auth-panel" hidden>
+          <p id="auth-hint" class="muted"></p>
+          <button id="login-btn" class="btn primary" type="button"></button>
+        </div>
+        <p id="auth-user" class="muted" hidden></p>
+        <p id="leaders-status" class="muted"></p>
+        <div id="leaders-list" class="leaders-list"></div>
+        <button id="leaders-refresh" class="btn ghost" type="button"></button>
+      </div>
+    </div>
+
+    <div id="prize-overlay" class="overlay" hidden>
+      <div class="card prize-card">
+        <div id="prize-burst" aria-hidden="true"></div>
+        <h2 id="prize-title"></h2>
+        <div id="prize-icon"></div>
+        <div id="prize-label"></div>
+        <button id="prize-take" class="btn primary" type="button"></button>
+      </div>
+    </div>
+
+    <div id="loading-screen">
+      <div class="loader-hex">
+        <span></span><span></span><span></span>
+      </div>
+      <div id="loading-brand">ВЗРЫВ БЛОКОВ <b>3D</b></div>
+      <div id="loading-text">Загрузка…</div>
+    </div>
+  </div>
+</body>
+</html>
